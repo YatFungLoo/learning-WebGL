@@ -3,9 +3,12 @@
 - [Lesson 2](#lesson-2)
 - [Lesson 3](#lesson-3)
     - [Basic 4 elements](#basic-4-elements)
-- [Gimble Lock](#gimble-lock)
-- [Eular vs Quaternion](#eular-vs-quaternion)
-- [Group](#group)
+- [Lesson 4: Transform Objects](#lesson-4-transform-objects)
+    - [Gimble Lock](#gimble-lock)
+    - [Eular vs Quaternion](#eular-vs-quaternion)
+    - [Group](#group)
+- [Lesson 5](#lesson-5)
+- [GreenSock](#greensock)
 
 ## Lesson 2
 
@@ -65,7 +68,7 @@ By default camera will be at `0, 0, 0` position which are not that helpful,
 objects (including the camera) can be transformed using `position`, `rotation`
 and `scale`.
 
-# Lesson 4: Transform Objects
+## Lesson 4: Transform Objects
 
 To be able to animate objects we need to be able to move the object, to move an
 object in WebGL we transform them.
@@ -87,7 +90,7 @@ Use `set()` to set all three axis at once.
 
 Use `AxesHelper()` to show axis lines, note it is an object.
 
-## Gimble Lock
+### Gimble Lock
 
 `rotation()` on mesh object is in Eular format, use `Math.PI * scalar` to spin
 the mesh around.
@@ -102,7 +105,7 @@ representation that can be gimble locked.
 _Quaternion_ expresses a rotation, just remember it updates when you change
 `rotation`.
 
-## Eular vs Quaternion
+### Eular vs Quaternion
 
 Eular representation 3D rotation with 3 number of angle. Quaternion
 representation 3D rotation with a scalar and a 3D vector.
@@ -118,6 +121,44 @@ Divided by two because of transformation ($v' = a v a^{-1}$), where $v$ is the
 original vector and the two $a$ rotates it. Science multiplying $a$ twice hence
 the divided by two in the above equation.
 
-## Group
+### Group
 
-Object can be group into a `Group` class, they will transfer together.
+Object can be group into a `Group` class, they will transform together.
+
+## Lesson 5
+
+`requestAnimationFrame` calls the provided function on the _next frame_.
+
+Animation in three.js should not be tied to frame rate, computer with higher
+frame rate will have a faster updating animation. Using delta time is one
+solution as everyone exist on the same time.
+
+```javascript
+let time = Date.now(); // Time now
+
+const tick = () => {
+  // Animation loop
+  const currentTime = Date.now();
+  const deltaTime = currentTime - time; // calculate time between frame
+  time = currentTime;
+
+  mesh.rotation.x += 0.0005 * deltaTime; // use delta as reference
+  mesh.rotation.z += 0.0005 * deltaTime;
+  renderer.render(scene, camera); // rerender
+  window.requestAnimationFrame(tick);
+};
+
+tick();
+```
+
+Three.js provides a built-in `Clock()` that have the same function as delta
+time.
+
+## GreenSock
+
+Library like `GSAP` provides more control such as creating tweens, timelines,
+etc. (tweens refers to object moving from A to B).
+
+Note GreenSock runs on its own tick rate, independent to the tick mentioned
+above. However it still requires three.js renderer for the animation to work on
+an object.
