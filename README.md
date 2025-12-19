@@ -1,5 +1,9 @@
 # Learning WebGL and Three.js
 
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+
+**Table of Contents**
+
 - [Lesson 2](#lesson-2)
 - [Lesson 3](#lesson-3)
     - [Basic 4 elements](#basic-4-elements)
@@ -8,7 +12,14 @@
     - [Eular vs Quaternion](#eular-vs-quaternion)
     - [Group](#group)
 - [Lesson 5](#lesson-5)
-- [GreenSock](#greensock)
+    - [GreenSock](#greensock)
+- [Lesson 6](#lesson-6)
+    - [Plane and z-fighting](#plane-and-z-fighting)
+    - [Orthographic Camera](#orthographic-camera)
+    - [Cursor movement](#cursor-movement)
+    - [Device specific camera control](#device-specific-camera-control)
+
+<!-- markdown-toc end -->
 
 ## Lesson 2
 
@@ -137,15 +148,15 @@ solution as everyone exist on the same time.
 let time = Date.now(); // Time now
 
 const tick = () => {
-  // Animation loop
-  const currentTime = Date.now();
-  const deltaTime = currentTime - time; // calculate time between frame
-  time = currentTime;
+    // Animation loop
+    const currentTime = Date.now();
+    const deltaTime = currentTime - time; // calculate time between frame
+    time = currentTime;
 
-  mesh.rotation.x += 0.0005 * deltaTime; // use delta as reference
-  mesh.rotation.z += 0.0005 * deltaTime;
-  renderer.render(scene, camera); // rerender
-  window.requestAnimationFrame(tick);
+    mesh.rotation.x += 0.0005 * deltaTime; // use delta as reference
+    mesh.rotation.z += 0.0005 * deltaTime;
+    renderer.render(scene, camera); // rerender
+    window.requestAnimationFrame(tick);
 };
 
 tick();
@@ -154,7 +165,7 @@ tick();
 Three.js provides a built-in `Clock()` that have the same function as delta
 time.
 
-## GreenSock
+### GreenSock
 
 Library like `GSAP` provides more control such as creating tweens, timelines,
 etc. (tweens refers to object moving from A to B).
@@ -162,3 +173,87 @@ etc. (tweens refers to object moving from A to B).
 Note GreenSock runs on its own tick rate, independent to the tick mentioned
 above. However it still requires three.js renderer for the animation to work on
 an object.
+
+## Lesson 6
+
+`Camera` is an abstract class, remember to not use it directly. Use the derived
+classes
+
+1. Perspective camera
+2. Array camera
+3. Stereo camera (VR, depth)
+4. Cube camera (6 render)
+5. Orthographic camera (render without perspective)
+
+### Plane and z-fighting
+
+`PerspectiveCamera` provides near and far plane limit, object outside the ranges
+will not be rendered.
+
+[Z-fighting](https://en.wikipedia.org/wiki/Z-fighting) occur when two objects
+are very close together at the z-plane where there are not enough precision to
+distinguish one another.
+
+Avoid extreme value for near and far plane as the larger ranges will reduce the
+precision of the plane, increasing the chances of z-fighting.
+
+### Orthographic Camera
+
+`OrthographicCamera` initiate by providing its left, right, top and bottom
+frustum.
+
+Using the default value the cube will look flat, because it is rendering a
+square into a rectangle canvas. To render the cube shape, multiply the aspect
+ration to the left and right place frustum.
+
+```javascript
+const aspectRatio = sizes.width / sizes.height;
+const camera = new THREE.OrthographicCamera(
+    -1 * aspectRatio,
+    1 * aspectRatio,
+    1,
+    -1
+);
+```
+
+> TODO: need to study this a little bit more.
+
+### Cursor movement
+
+Using event listener on mouse the pixel can be extracted, to normorise the
+tracking the pixel position can be divided by the viewport size.
+
+```javascript
+window.addEventListener('mousemove', (event) => {
+    cursor.x = event.clientX / sizes.width;
+    cursor.y = event.clientY / sizes.height;
+});
+```
+
+### Device specific camera control
+
+Three.js provides built-in function to control the camera using device specific
+hardware such as
+[Fly control](https://threejs.org/docs/?q=controls#FlyControls)using WASD to
+move on keyboard and
+[Arcball control](https://threejs.org/docs/?q=controls#ArcballControls) on touch
+devices.
+
+Note that camera control is not inclduded by default with the three.js import,
+search for the modules at either `/addon/` or `/example/jsm` within
+`/node_modules/three` when importing.
+
+```javascript
+const canvas = document.querySelector('canvas.webgl'); // DOM Element
+const controls = new OrbitControls(camera, canvas);
+```
+
+> DOM (Document Object Model) element is an object representating a specific
+> HTML or XML tag within a web structure.
+
+Additional control can be added to camera control, remember to update it with
+`.update()` to see the effect.
+
+Some additional controls, for example damping will stop occuring when camera is
+not being updated by mouse. Putting `.update()` inside `requestAnimationFrame()`
+will let the animation continue to update.
