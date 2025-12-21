@@ -18,6 +18,10 @@
     - [Orthographic Camera](#orthographic-camera)
     - [Cursor movement](#cursor-movement)
     - [Device specific camera control](#device-specific-camera-control)
+- [Lesson 7](#lesson-7)
+    - [Viewport resizing](#viewport-resizing)
+    - [Pixel ratio](#pixel-ratio)
+    - [Fullscreen](#fullscreen)
 
 <!-- markdown-toc end -->
 
@@ -233,9 +237,8 @@ window.addEventListener('mousemove', (event) => {
 ### Device specific camera control
 
 Three.js provides built-in function to control the camera using device specific
-hardware such as
-[Fly control](https://threejs.org/docs/?q=controls#FlyControls)using WASD to
-move on keyboard and
+hardware such as [Fly control](https://threejs.org/docs/?q=controls#FlyControls)
+using WASD to move on keyboard and
 [Arcball control](https://threejs.org/docs/?q=controls#ArcballControls) on touch
 devices.
 
@@ -257,3 +260,33 @@ Additional control can be added to camera control, remember to update it with
 Some additional controls, for example damping will stop occuring when camera is
 not being updated by mouse. Putting `.update()` inside `requestAnimationFrame()`
 will let the animation continue to update.
+
+## Lesson 7
+
+### Viewport resizing
+
+Adjusting website's css allows better immersion for the users. Best practice to
+try the website with camera control disabled to check for overflow if user
+happens to not be able to control the camera due to different devices/browser
+combo being used.
+
+1. margin and padding
+2. hide overflow (scrolling)
+3. blue highlight outline
+
+When handling resizing windows, remember to handle both the camera and the
+render resize, they are seperate.
+
+### Pixel ratio
+
+Higher resolution display like Apple's retina allows software pixel to divided
+into more tinier pixel to make render sharper, the amount of pixel per row or
+column multiplied by this is the pixel ratio. Pixel ratio of 2 render a single
+pixel into 4, smart phones tiny 4k display goes up to 5.
+
+Find devie pixel ratio with `window.devicePixelRatio` and set it to renderer.
+
+### Fullscreen
+
+Using either a button or an event (e.g. 'dblclock'), remember to support older
+devices.

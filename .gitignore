@@ -9,3 +9,5 @@ README.pdf
 05/node_modules
 06/node_modules
 06/package-lock.json
+/07/node_modules/
+/07/package-lock.json
