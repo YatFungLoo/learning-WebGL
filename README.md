@@ -9,7 +9,7 @@
     - [Basic 4 elements](#basic-4-elements)
 - [Lesson 4: Transform Objects](#lesson-4-transform-objects)
     - [Gimble Lock](#gimble-lock)
-    - [Eular vs Quaternion](#eular-vs-quaternion)
+    - [Eular vs Quaternion](#euler-vs-quaternion)
     - [Group](#group)
 - [Lesson 5](#lesson-5)
     - [GreenSock](#greensock)
@@ -22,6 +22,9 @@
     - [Viewport resizing](#viewport-resizing)
     - [Pixel ratio](#pixel-ratio)
     - [Fullscreen](#fullscreen)
+- [Lesson 8](#lesson-8)
+    - [Geometry](#geometry)
+    - [Custom geometry](#custom-geometry)
 
 <!-- markdown-toc end -->
 
@@ -224,7 +227,7 @@ const camera = new THREE.OrthographicCamera(
 
 ### Cursor movement
 
-Using event listener on mouse the pixel can be extracted, to normorise the
+Using event listener on mouse the pixel can be extracted, to normalize the
 tracking the pixel position can be divided by the viewport size.
 
 ```javascript
@@ -242,7 +245,7 @@ using WASD to move on keyboard and
 [Arcball control](https://threejs.org/docs/?q=controls#ArcballControls) on touch
 devices.
 
-Note that camera control is not inclduded by default with the three.js import,
+Note that camera control is not included by default with the three.js import,
 search for the modules at either `/addon/` or `/example/jsm` within
 `/node_modules/three` when importing.
 
@@ -251,13 +254,13 @@ const canvas = document.querySelector('canvas.webgl'); // DOM Element
 const controls = new OrbitControls(camera, canvas);
 ```
 
-> DOM (Document Object Model) element is an object representating a specific
+> DOM (Document Object Model) element is an object representing a specific
 > HTML or XML tag within a web structure.
 
 Additional control can be added to camera control, remember to update it with
 `.update()` to see the effect.
 
-Some additional controls, for example damping will stop occuring when camera is
+Some additional controls, for example damping will stop occurring when camera is
 not being updated by mouse. Putting `.update()` inside `requestAnimationFrame()`
 will let the animation continue to update.
 
@@ -275,7 +278,7 @@ combo being used.
 3. blue highlight outline
 
 When handling resizing windows, remember to handle both the camera and the
-render resize, they are seperate.
+render resize, they are separate.
 
 ### Pixel ratio
 
@@ -290,3 +293,50 @@ Find devie pixel ratio with `window.devicePixelRatio` and set it to renderer.
 
 Using either a button or an event (e.g. 'dblclock'), remember to support older
 devices.
+
+## Lesson 8
+
+### Geometry
+
+Geometries in WebGL composes of _vertices_ (points in spaces) and _faces_
+(triangles joined by vertices to create surface). Rendering the faces it becomes
+meshes, without rendering it geometry can used for particles.
+
+Each vertex has `position`, `UV`, `normal` and more.
+
+Built-in geometry inherits from `BufferGeometry`, consult its documentation (for
+example [`CircleGeometry`](https://threejs.org/docs/?q=geomet#CircleGeometry))
+before creating a custom geometry. Remember combining shapes also create complex
+object.
+
+`width/height/depthSegments` of subdivision can be adjusted on each face to add
+more details to a face. Enabling wireframe on an object to see its subdivision.
+
+### Custom geometry
+
+The Following creates a flat right angle triangle.
+
+1. Float32Array(9) for 3 vertices positions
+2. Pass positions to `BufferAttribute`
+3. Initialise `BufferGeometry` object
+4. Use `setAttribute` to set `position` to `BufferGeometry`
+
+`position` attribute is a Three.js name, is it the name they chose to represents
+shader.
+
+9 elements array for 3 vertices are
+
+1. 0, 1, 2 are first vertex x, y, z
+2. 3, 4, 5 are second vertex x, y, z
+3. 6, 7, 8 are third vertex x, y, z
+
+```javascript
+const positionArray = new Float32Array([0, 0, 0, 0, 1, 0, 1, 0, 0]);
+
+const positionAttribute = new THREE.BufferAttribute(positionArray, 3);
+const geometry = new THREE.BufferGeometry();
+geometry.setAttribute('position', positionAttribute);
+```
+
+> Sometimes geometry can share the same vertex, using indexing vertex can be
+> marked as reusable and it can leveraged as optimization.
