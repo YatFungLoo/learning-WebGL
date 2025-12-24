@@ -1,30 +1,33 @@
 # Learning WebGL and Three.js
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
-
 **Table of Contents**
 
-- [Lesson 2](#lesson-2)
-- [Lesson 3](#lesson-3)
+  - [Lesson 2](#lesson-2)
+  - [Lesson 3](#lesson-3)
     - [Basic 4 elements](#basic-4-elements)
-- [Lesson 4: Transform Objects](#lesson-4-transform-objects)
+  - [Lesson 4: Transform Objects](#lesson-4-transform-objects)
     - [Gimble Lock](#gimble-lock)
-    - [Eular vs Quaternion](#euler-vs-quaternion)
+    - [Euler vs Quaternion](#euler-vs-quaternion)
     - [Group](#group)
-- [Lesson 5](#lesson-5)
+  - [Lesson 5](#lesson-5)
     - [GreenSock](#greensock)
-- [Lesson 6](#lesson-6)
+  - [Lesson 6](#lesson-6)
     - [Plane and z-fighting](#plane-and-z-fighting)
     - [Orthographic Camera](#orthographic-camera)
     - [Cursor movement](#cursor-movement)
     - [Device specific camera control](#device-specific-camera-control)
-- [Lesson 7](#lesson-7)
+  - [Lesson 7](#lesson-7)
     - [Viewport resizing](#viewport-resizing)
     - [Pixel ratio](#pixel-ratio)
     - [Fullscreen](#fullscreen)
-- [Lesson 8](#lesson-8)
+  - [Lesson 8](#lesson-8)
     - [Geometry](#geometry)
     - [Custom geometry](#custom-geometry)
+  - [Lesson 9](#lesson-9)
+    - [Debug UI](#debug-ui)
+    - [General properties](#general-properties)
+    - [Non-modifiable properties](#non-modifiable-properties)
 
 <!-- markdown-toc end -->
 
@@ -110,22 +113,22 @@ Use `AxesHelper()` to show axis lines, note it is an object.
 
 ### Gimble Lock
 
-`rotation()` on mesh object is in Eular format, use `Math.PI * scalar` to spin
+`rotation()` on mesh object is in Euler format, use `Math.PI * scalar` to spin
 the mesh around.
 
 When applying rotation not in order axis can get \"locked\" where no matter how
 you adjust the value of the axis it will \"not\" output the desired results,
 that is what known as gimble locked.
 
-Applying rotation in order is pretty important. Eular representation is the only
+Applying rotation in order is pretty important. Euler representation is the only
 representation that can be gimble locked.
 
 _Quaternion_ expresses a rotation, just remember it updates when you change
 `rotation`.
 
-### Eular vs Quaternion
+### Euler vs Quaternion
 
-Eular representation 3D rotation with 3 number of angle. Quaternion
+Euler representation 3D rotation with 3 number of angle. Quaternion
 representation 3D rotation with a scalar and a 3D vector.
 
 [_Quaternion_](https://www.youtube.com/watch?v=PMvIWws8WEo) can be added,
@@ -254,8 +257,8 @@ const canvas = document.querySelector('canvas.webgl'); // DOM Element
 const controls = new OrbitControls(camera, canvas);
 ```
 
-> DOM (Document Object Model) element is an object representing a specific
-> HTML or XML tag within a web structure.
+> DOM (Document Object Model) element is an object representing a specific HTML
+> or XML tag within a web structure.
 
 Additional control can be added to camera control, remember to update it with
 `.update()` to see the effect.
@@ -340,3 +343,45 @@ geometry.setAttribute('position', positionAttribute);
 
 > Sometimes geometry can share the same vertex, using indexing vertex can be
 > marked as reusable and it can leveraged as optimization.
+
+## Lesson 9
+
+### Debug UI
+
+There are library for accessing features of Three.js within the viewport. The
+course uses [lil-gui](https://lil-gui.georgealways.com/).
+
+Tweak types include
+
+1. Range
+2. Colour
+3. Text
+4. Checkbox
+5. Select
+6. Button
+
+use `gui.add()` to add object's properties to the debug menu. Refer to
+documentation for the latest update.
+
+### General properties
+
+Variable can also be added to gui slider, while `gui.add()` cannot take variable
+directly, the variable can be wrapped inside an object for the sake for being an
+object and pass that to `gui.add()`.
+
+> Three.js does optimization automatically, it happens to colour as well, that's
+> the reason why the colour is different from colour picker and the hex colour.
+> remember to use `getHexstring()` to get the raw value.
+
+An object can store multiple different types of variables and function, create
+one object designated for debug is one way to handle it.
+
+Folders are available to organize the options.
+
+### Non-modifiable properties
+
+Properties like `widthSegment` of a geometry, once rendered doesn't not change
+even after when the value itself is changed. To add this variable to the debug
+menu, the object must be destroy and re-rendered with the new assigned value.
+
+> Remember to `dispose()` the old geometry to prevent memory leaks.
