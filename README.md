@@ -28,6 +28,17 @@
     - [Debug UI](#debug-ui)
     - [General properties](#general-properties)
     - [Non-modifiable properties](#non-modifiable-properties)
+  - [Lesson 10](#lesson-10)
+    - [Textures](#textures)
+    - [PBR principles](#pbr-principles)
+    - [Using textures](#using-textures)
+    - [UV unwrapping](#uv-unwrapping)
+    - [Transformation](#transformation)
+    - [Filtering and mipmapping](#filtering-and-mipmapping)
+    - [Format and optimisation](#format-and-optimisation)
+      - [Weight](#weight)
+      - [Size](#size)
+      - [Data](#data)
 
 <!-- markdown-toc end -->
 
@@ -102,7 +113,7 @@ object in WebGL we transform them.
 All classes inherited from `Object3D` possess the above 4 properties. Compiled
 in matrices.
 
-There are many methods such as `normalize()` and
+There are many methods such as `normalise()` and
 [`length()`](https://threejs.org/docs/?q=vector3#Vector3.length) available to
 position because it is an `Vector3` objects. Check
 [doc](https://threejs.org/docs/?q=vector3#Vector3)
@@ -132,7 +143,7 @@ Euler representation 3D rotation with 3 number of angle. Quaternion
 representation 3D rotation with a scalar and a 3D vector.
 
 [_Quaternion_](https://www.youtube.com/watch?v=PMvIWws8WEo) can be added,
-multiply by scalar, and usually normalize and conjugation. It has order in
+multiply by scalar, and usually normalise and conjugation. It has order in
 multiplication. WebGL is right-handedness.
 
 $q = \cos\left(\frac{\theta}{2}\right) + \sin\left(\frac{\theta}{2}\right)
@@ -230,7 +241,7 @@ const camera = new THREE.OrthographicCamera(
 
 ### Cursor movement
 
-Using event listener on mouse the pixel can be extracted, to normalize the
+Using event listener on mouse the pixel can be extracted, to normalise the
 tracking the pixel position can be divided by the viewport size.
 
 ```javascript
@@ -342,7 +353,7 @@ geometry.setAttribute('position', positionAttribute);
 ```
 
 > Sometimes geometry can share the same vertex, using indexing vertex can be
-> marked as reusable and it can leveraged as optimization.
+> marked as reusable and it can leveraged as optimisation.
 
 ## Lesson 9
 
@@ -369,14 +380,14 @@ Variable can also be added to gui slider, while `gui.add()` cannot take variable
 directly, the variable can be wrapped inside an object for the sake for being an
 object and pass that to `gui.add()`.
 
-> Three.js does optimization automatically, it happens to colour as well, that's
+> Three.js does optimisation automatically, it happens to colour as well, that's
 > the reason why the colour is different from colour picker and the hex colour.
 > remember to use `getHexstring()` to get the raw value.
 
 An object can store multiple different types of variables and function, create
 one object designated for debug is one way to handle it.
 
-Folders are available to organize the options.
+Folders are available to organise the options.
 
 ### Non-modifiable properties
 
@@ -385,3 +396,152 @@ even after when the value itself is changed. To add this variable to the debug
 menu, the object must be destroy and re-rendered with the new assigned value.
 
 > Remember to `dispose()` the old geometry to prevent memory leaks.
+
+## Lesson 10
+
+### Textures
+
+Textures are pictures that covers geometries. There are different types and
+effects. Common types are
+
+1. Colour or Albedo - Applied directly on object
+2. Alpha - Grayscale, white visible black not visible
+3. Height or Displacement - Grayscale, for subdivision, move vertices up/down
+   for white/black
+4. Normal - Add lighting details, doesn't need subdivision
+5. Ambient occlusion - Grayscale, add fake shadows
+6. Metalness - Grayscale, add reflection to white parts (i.e. metallic)
+7. Roughness - Grayscale, add light dissipation, white/black for rough/smooth
+
+### PBR principles
+
+Textures follows PBR principles, often refereed as "Physically Based Rendering
+method", a concept of using realistic shading and models in combination with
+bunch of maths and algorithm to accurately mimic objects textures. A standard
+way for realistic renders.
+
+1. Energy conservation - object can reflect more light than received
+2. Albedo - base colour map
+3. Microsurface - surface roughness or smoothness
+4. Reflectivity - percentage of light reflected
+5. Fresnel - surface reflectivity at gazing angles
+6. Ambient occlusion - represents large scale occluded light
+7. Cavity - represents small scale occluded light
+
+[Link 1]{https://marmoset.co/posts/basic-theory-of-physically-based-rendering/}
+[Link 2]{https://marmoset.co/posts/physically-based-rendering-and-you-can-too/}
+
+### Using textures
+
+Three.js provides a class
+([`TextureLoader()`](https://threejs.org/docs/?q=texture%20loader#TextureLoader))to
+load image as texture, which does something like this:
+
+```javascript
+const image = new Image();
+const texture = new THREE.Texture(image);
+texture.colorSpace = THREE.SRGBColorSpace; // Texture used as map/matcap should be encoded in sRBG
+
+image.onload = () => {
+    texture.needsUpdate = true;
+};
+
+image.src = '/textures/image.jpg';
+```
+
+Although `TextureLoader()` already provide callback functions, for bigger
+project the `loadingManager()` class can be taken advantage of as a global
+loading progress tracker to mutualise the events. It provides `onStart`,
+`onLoad`, `onProgress`, `onError` to listen to.
+
+### UV unwrapping
+
+Texture are being stretched or squeezed to cover the geometry, this is refereed
+to as UV unwrapping. Each vertex has a 2D coordinate on a flat plane, the UV
+coordinates can be accessed with `geometry.attributes.uv`.
+
+UV coordinates on Three.js geometries are generated by Three.js, when defining a
+custom geometry the programmer have to specify the UV coordinates.
+
+### Transformation
+
+Texture can be transformed, for example texture repeats, note by default only
+the last texture would be repeated remember to enable wrapping. Rotation are in
+radian.
+
+```javascript
+colorTexture.repeat.x = 4;
+colorTexture.repeat.y = 2;
+colorTexture.wrapS = THREE.MirroredRepeatWrapping;
+colorTexture.wrapT = THREE.RepeatWrapping;
+
+colorTexture.offset.x = 0.5;
+colorTexture.offset.y = 0.5;
+
+colorTexture.rotation = Math.PI / 6; // in radian
+colorTexture.center.x = 0.5;
+colorTexture.center.y = 0.5;
+```
+
+### Filtering and mipmapping
+
+Mipmapping is a technique that consists of creating half a smaller version of a
+texture again and again until we get a 1x1 texture. Those generated images will
+be used according to size of the pixel on the object (smaller surface smaller
+texture). _Minification_ filter is one example of mipmapping, the texture gets
+"worse" when zooming out of an object, internally it is using a smaller scaled
+of the provided texture.
+
+There is also `magFilter` which changes the magnification filter of the texture.
+For example, using `magFilter` with `NearestFilter` can make the image appear
+sharper. Because the texture is practically less sharp, it helps with
+performances as well.
+
+In Three.js, both filters of the texture can be changed.
+
+1. Nearest
+2. Linear
+3. Nearest mipmap nearest
+4. Nearest mipmap linear
+5. Linear mipmap nearest
+6. Linear mipmap linear
+
+> When using `THREE.NearestFilter` on `minFilter`, mipmapping is not needed.
+> Disable it via `colorTexture.generateMipmaps = false`
+
+### Format and optimisation
+
+#### Weight
+
+When user loads a website it will download all the texture that are being used
+on it, the two main types are `.jpg` and `.png`. Former are lossy but lighter in
+compression to the latter which are lossless and heavier. Use software like
+`TinyPNG` to compress images. There is also one called `.basis`.
+
+#### Size
+
+Each pixel of the texture will be stored on the GPU, and each GPU has storage
+limitation, enabling mipmapping will multiply the number of pixels to store.
+Take care of the number of pixels and reduce the size of images as much as
+possible.
+
+Since mipmapping produces a half smaller version of the texture until 1 by 1,
+images used for mipmapping has to be in power of 2, or the calculation will be
+in float and slower and returns a bad result since Three.js will resize images
+that are not in power of 2.
+
+#### Data
+
+Texture supports transparency, but `.jpg` does not inherently supports it like
+`.png` does. Choose between sending colour with alpha `.jpg`s texture or sending
+a single `.png` file to the GPU depending on the project.
+
+Normal texture should provides exact values, use `.png` for normal texture as it
+is _lossless_ and compression is not applied.
+
+Data can also be combined into single texture by using red, green, blue and
+alpha channels separately, and tell Three.js to apply different mesh to
+different channel.
+
+> Every Project is different and needs to be optimised differently finding the
+> perfect combination.
